@@ -6,8 +6,6 @@ import (
 	instructionptr "github.com/colinwilcox1967/GoLang-Befunge93/instructionptr"
 )
 
-
-
 var ptr instructionptr.InstructionPtr
 
 
