@@ -9,6 +9,10 @@ import (
 
 "github.com/eiannone/keyboard"
 "github.com/colinwilcox1967/intstack"
+interpreter "github.com/colinwilcox1967/golang-befunge93/interpreter"
+instructionptr "github.com/colinwilcox1967/golang-befunge93/instructionptr"
+
+
 )
 	
 const BEFUNGE93_VERSION = "v1.0"
@@ -32,21 +36,15 @@ const (
 	MINIMUM_MMEORY_BLOCK_SIZE = 1000 // min menory size
 )
 
-// instruction ptr
-type instruction_ptr struct {
-	xPos, yPos int
-}
-
 var (
 	sourceFileName string = DEFAULT_SOURCE_FILE
 	memorySizePtr	     *int    
 	stack 				intstack.IntStack
-	iPtr 				instruction_ptr
+	instructionPtr		instructionptr.InstructionPtr
 )
 
 var (
 	memoryPtr int			// Pointer to current location in memory
-	instructionPtr int		// Pointer to current instruction
 	memory []uint8
 	instructions []uint8
 
@@ -62,8 +60,10 @@ func main () {
 	displayBanner ()
 	Initialise ()
 
-	fmt.Printf ("%d %d %d\n", stack.Size (), iPtr.GetXPos (), iPtr.GetYPos ())
+stack.Push (65)
+	interpreter.PopAndDisplayAsASCII (&stack)
 
+	
 	// read command line arguments, 'MEMORY' & 'FILE'
 	flag.StringVar (&sourceFileName, "file", DEFAULT_SOURCE_FILE,"Name of default code file")
 
@@ -86,7 +86,7 @@ func main () {
 		codeSize = len(data)
 		
 		instructions = make ([]uint8, codeSize, codeSize)
-		instructionPtr = 0
+	
 
 		fmt.Println ("Parsing file ...")
 		if status := parseFile (data); status != KErrorNone {
@@ -109,20 +109,7 @@ func displayBanner () {
 
 func Initialise () {
 	stack.Reset ()
-	iPtr.SetPos (2,3)
-}
-
-func (ptr *instruction_ptr)SetPos (x,y int) {
-	ptr.xPos = x
-	ptr.yPos = y
-}
-
-func (ptr *instruction_ptr)GetXPos () int {
-	return ptr.xPos
-}
-
-func (ptr *instruction_ptr)GetYPos () int {
-	return ptr.yPos
+	instructionPtr.ResetInstructionPtr()
 }
 
 
@@ -139,167 +126,14 @@ func readFileToMemory (filename string) ([]uint8, error) {
 	return nil, err	
 }
 
-
 func parseFile (data []uint8) int {
-	var sourceIndex int
-	var targetIndex int
-	var bracketCount int
-
-	for sourceIndex < len(data) {
-		if validChar (data[sourceIndex]) {
-			instructions[targetIndex] = data[sourceIndex]
-
-			// check bracket paring matches up
-			if instructions[targetIndex] == '[' {
-				bracketCount++
-			} else {
-				if instructions[targetIndex] == ']' {
-					bracketCount--
-				}
-			}
-
-			if bracketCount < 0 {
-				showStatus (KErrorUnexpectedClosingBracketFound,"",0)
-			}
-
-			targetIndex++
-		}
-		sourceIndex++
-	}
-
-	if bracketCount != 0 {
-		showStatus (KErrorBracketsNotPaired,"",0)
-	}
-
-	fileSize = targetIndex
-
 	return KErrorNone
 }
 
 func executeFile () int {
-	
-	resetPtrs ()
-	for instructionPtr < fileSize {
-	
-		switch instructions[instructionPtr] {
-			case '+': incrementValueAtDataPtr ()
- 			case '-': decrementValueAtDataPtr ()
-			case '<': decrementDataPtr ()
-			case '>': incrementDataPtr ()
-			case '.': outputByte ()
-			case ',': inputByte ()
-			case '[': skipForwardIfZero ()
-			case ']': skipBackwardIfNotZero ()
-			default:
-				return KErrorInvalidCharacterFound
-		}
-	}
-
 	return KErrorNone
 }
 
-func resetPtrs () {
-	instructionPtr = 0
-	memoryPtr = 0
-	nestingLevel = 0
-}
-
-// '>' command 
-func incrementDataPtr () {
-	if memoryPtr < *memorySizePtr - 1 {
-		memoryPtr++
-	}
-	instructionPtr++
-}
-
-// '<' command
-func decrementDataPtr () {
-	if memoryPtr > 0 {
-		memoryPtr--
-	}
-	instructionPtr++
-}
-
-// '+' command
-func incrementValueAtDataPtr () {
-	memory[memoryPtr]++
-	instructionPtr++
-
-}
-
-// '-'
-func decrementValueAtDataPtr () {
-	memory[memoryPtr]--
-	instructionPtr++
-}
-
-// '.'
-func outputByte () {
-	fmt.Printf("%c", memory[memoryPtr])
-	instructionPtr++
-}
-
-// ',' command
-func inputByte () {
-	char, _, err := keyboard.GetSingleKey ()
-	if err == nil {
-		memory[memoryPtr] = uint8(char)
-	}
-	instructionPtr++
-}
-
-// '[' command
-func skipForwardIfZero () {
-	if memory[memoryPtr] == 0 {
-		// skip to byte after matching closing bracket
-		var openBracketCount, closingBracketCount int
-		var foundMatchingBracket bool = false
-
-		for !foundMatchingBracket && (instructionPtr < fileSize){
-			if instructions[instructionPtr] == '[' {
-				openBracketCount++
-			} else if instructions[instructionPtr] == ']' {
-				closingBracketCount++
-			} 
-			instructionPtr++
-			if (openBracketCount == closingBracketCount) {
-				foundMatchingBracket = true;
-			}
-		}
-	} else {
-		// move to next byte
-		instructionPtr++
-	}
-}
-
-// ']' command
-func skipBackwardIfNotZero () {
-	if instructions[instructionPtr] != 0 {
-		var foundMatchingBracket bool = false
-		var nestingLevel int = 0
-		for instructionPtr >= 0 && !foundMatchingBracket {
-			if instructions[instructionPtr] == '[' {
-				nestingLevel++
-			} else if instructions[instructionPtr] == ']' {
-				nestingLevel--
-			}
-
-			if (nestingLevel == 0) {
-				foundMatchingBracket = true
-			} else {
-				instructionPtr--
-			}
-
-		}
-	} else {
-		instructionPtr++
-	}
-
-}
-
-func validChar (ch uint8) bool {
-	return strings.IndexByte ("+-.,[]<>", ch) != -1
-}
 
 func dump (){
 	fmt.Printf ("%d:", instructionPtr)
