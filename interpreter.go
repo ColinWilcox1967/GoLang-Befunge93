@@ -2,27 +2,6 @@ package main
 
 package golang-befunge93
 
-type struct instruction_ptr {
-	xpos, ypos int
-}
-
-var (
-
-	)
-
-func main () {
-	
-}
-
-func (ptr *instruction_ptr)ResetPointer () {
-	ptr.xpos = ptr.ypos = 0
-}
-
-func (ptr *instruction_ptr)MoveInstructionPointer(xchange, ychange int) {
-	ptr.xpos += xchange
-	ptr.ypos += ychange
-}
-
 // extra stack operations
 func (s *IntStack)AddTopStack () bool {
 	if s.Size () >= 2 {
