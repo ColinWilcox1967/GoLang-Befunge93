@@ -1,5 +1,7 @@
 package befunge93instructionptr
 
+import "fmt"
+
 type InstructionPtr struct {
 	xPos, yPos int
 }
@@ -20,4 +22,9 @@ func (iptr *InstructionPtr)GetXPos () int {
 
 func (iptr *InstructionPtr)GetYPos () int {
 	return iptr.yPos
+}
+
+// helper
+func (iptr *InstructionPtr)ShowInstructionPtr () {
+	fmt.Printf ("Iptr: (%d,%d)\n", iptr.xPos, iptr.yPos)
 }
