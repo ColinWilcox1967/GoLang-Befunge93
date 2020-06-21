@@ -11,9 +11,14 @@ func (iptr *InstructionPtr)ResetInstructionPtr () {
 	iptr.yPos = 0
 }
 
-func (iptr *InstructionPtr)SetInstructionPtr (x,y int) {
+func (iptr *InstructionPtr)MoveInstructionPtr (x,y int) {
 	iptr.xPos = x
 	iptr.yPos = y
+}
+
+func (iptr *InstructionPtr)MoveInstructionPtrRelative (deltaX, deltaY int) {
+	iptr.xPos += deltaX
+	iptr.yPos += deltaY
 }
 
 func (iptr *InstructionPtr)GetXPos () int {
