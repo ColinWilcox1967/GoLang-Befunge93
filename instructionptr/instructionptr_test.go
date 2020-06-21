@@ -3,18 +3,26 @@ package befunge93instructionptr
 import (
 	"testing"
 	"fmt"
+	"strings"
+	"runtime"
 	instructionptr "github.com/colinwilcox1967/GoLang-Befunge93/instructionptr"
 )
 
-var ptr instructionptr.InstructionPtr
+
+var (
+	ptr instructionptr.InstructionPtr
+	testNumber int = 0
+)
 
 
 func TestResetInstructionPtr (t *testing.T) {
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	ptr.ShowInstructionPtr ()
 }
 
 func TestSetPositionX (t *testing.T) {
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	for x := 1; x<10; x++ {
 		ptr.MoveInstructionPtr (x, ptr.GetYPos ())
@@ -31,6 +39,7 @@ func TestSetPositionX (t *testing.T) {
 }
 
 func TestSetPositionY (t *testing.T) {
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	for y := 1 ; y<10; y++ {
 		ptr.MoveInstructionPtr (ptr.GetXPos (), y)
@@ -48,11 +57,13 @@ func TestSetPositionY (t *testing.T) {
 }
 
 func TestMovePositionRelative (t *testing.T) {
+	
+	// test 1 - no move
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos := ptr.GetXPos ()
 	originalYPos := ptr.GetYPos ()
 
-	// test 1 - no move
 	ptr.MoveInstructionPtrRelative (0,0)
 
 	newXPos := ptr.GetXPos ()
@@ -65,6 +76,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 2 - move x positive only
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -81,6 +93,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 3 - move x negative  only
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -97,6 +110,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 4 - move Y positive only
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -112,6 +126,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 5 - move Y negative only
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -128,6 +143,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 6 - move X,Y positive
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -144,6 +160,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 7 - move x,y negative
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -160,6 +177,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 8 - move X positive, Y negative
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -176,6 +194,7 @@ func TestMovePositionRelative (t *testing.T) {
 	}
 
 	// test 9 - move x negative, y positive
+	showNextTestHeader ()
 	ptr.ResetInstructionPtr ()
 	originalXPos = ptr.GetXPos ()
 	originalYPos = ptr.GetYPos ()
@@ -189,6 +208,24 @@ func TestMovePositionRelative (t *testing.T) {
 	if newXPos != -1 || newYPos != 1 {
 		t.Error ("Expected final position to be (-1,1)")
 	}
+}
+
+// helpers
+func showNextTestHeader () {
+	testNumber++
+	fmt.Println(fmt.Sprintf ("%s-%d", getCurrentFunctionName (), testNumber))
+}
+
+func getCurrentFunctionName () string {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(2, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	
+	//strip prefix upto leading '.'
+	dotPos := strings.Index (frame.Function,".")
+	
+    return frame.Function [dotPos+1:]
 }
 
 
