@@ -7,12 +7,8 @@ import (
 "io/ioutil"
 "strings"
 
-"github.com/eiannone/keyboard"
 "github.com/colinwilcox1967/intstack"
-interpreter "github.com/colinwilcox1967/golang-befunge93/interpreter"
 instructionptr "github.com/colinwilcox1967/golang-befunge93/instructionptr"
-
-
 )
 	
 const BEFUNGE93_VERSION = "v1.0"
@@ -30,29 +26,19 @@ const (
 )
 
 const (
-	DEFAULT_MEMORY_SIZE = 30000 // bytes
-	DEFAULT_CODE_SIZE 	= 10000 // bytes
-	DEFAULT_SOURCE_FILE = "A.BF" // to be changed
-	MINIMUM_MMEORY_BLOCK_SIZE = 1000 // min menory size
+	DEFAULT_SOURCE_FILE = "TEST.B93"
 )
 
 var (
 	sourceFileName string = DEFAULT_SOURCE_FILE
-	memorySizePtr	     *int    
 	stack 				intstack.IntStack
 	instructionPtr		instructionptr.InstructionPtr
 )
 
 var (
-	memoryPtr int			// Pointer to current location in memory
-	memory []uint8
-	instructions []uint8
-
 	// useful limits and sizes
-	codeSize int 		= DEFAULT_CODE_SIZE
 	sourceFileSize int
 	fileSize 	   int
-	nestingLevel   int // count of the bracket nesting level from the root
 )
 
 
@@ -60,34 +46,15 @@ func main () {
 	displayBanner ()
 	Initialise ()
 
-stack.Push (65)
-	interpreter.PopAndDisplayAsASCII (&stack)
-
 	
 	// read command line arguments, 'MEMORY' & 'FILE'
 	flag.StringVar (&sourceFileName, "file", DEFAULT_SOURCE_FILE,"Name of default code file")
-
-	
-	memorySizePtr = flag.Int ("memory", DEFAULT_MEMORY_SIZE, "Working memory size in bytes")
 	flag.Parse ()
 
 	fmt.Printf ("Reading from source file '%s' ...\n", strings.ToUpper (sourceFileName))
-	fmt.Printf ("Initialising memory block : %d bytes\n", *memorySizePtr)
 
-	if *memorySizePtr <= MINIMUM_MMEORY_BLOCK_SIZE {
-		showStatus (KErrorMemoryBlockSizeToSmall, "", *memorySizePtr)
-	}
-
-	// init memory block
-	memory = make ([]uint8, *memorySizePtr, *memorySizePtr)
-	
-	fmt.Println ("Reading File ....")
 	if data, err := readFileToMemory (sourceFileName); err == nil {
-		codeSize = len(data)
-		
-		instructions = make ([]uint8, codeSize, codeSize)
-	
-
+			
 		fmt.Println ("Parsing file ...")
 		if status := parseFile (data); status != KErrorNone {
 			showStatus (status, sourceFileName,0)
@@ -104,7 +71,7 @@ stack.Push (65)
 
 // private methods
 func displayBanner () {
-	fmt.Printf ("BrainFuck Interpreter %s\n\n", BEFUNGE93_VERSION)
+	fmt.Printf ("Befunge93 Interpreter %s\n\n", BEFUNGE93_VERSION)
 }
 
 func Initialise () {
@@ -134,14 +101,6 @@ func executeFile () int {
 	return KErrorNone
 }
 
-
-func dump (){
-	fmt.Printf ("%d:", instructionPtr)
-	for i:=0; i <5; i++{
-		fmt.Printf ("%02d ", memory[i])
-	}
-	fmt.Println ()
-}
 
 func showStatus (status int, extraInfoString string, extraInfoValue int) {
 
