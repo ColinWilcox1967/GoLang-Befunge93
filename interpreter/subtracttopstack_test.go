@@ -84,17 +84,17 @@ func TestSubtrackTopStack (t *testing.T) {
 
 // helpers
 func showNextTestHeader () {
-	testNumber++
-	fmt.Println(fmt.Sprintf (">>> %s-%d", getCallerFunctionName (), testNumber))
-}
+	var name string
 
-func getCallerFunctionName () string {
-  pc, _, _, ok := runtime.Caller(1)
+	testNumber++
+	pc, _, _, ok := runtime.Caller(1)
     details := runtime.FuncForPC(pc)
     if ok && details != nil {
-    	name := details.Name ()
+    	name = details.Name ()
     	var dotPos = strings.Index (name , ".")
-   		return name[dotPos+1:]
+   		name = name[dotPos+1:]
   	}
-	return ""
+
+	fmt.Println(fmt.Sprintf (">>> %s-%d", name, testNumber))
 }
+
