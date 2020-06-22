@@ -23,7 +23,7 @@ func TestSubtrackTopStack (t *testing.T) {
 	stack.Push (1)
 
 	status = interpreter.SubtractTopStack (&stack)
-	if !status {
+	if status {
 		t.Error ("Subtracted top two items to stack when there was only one, should have failed")
 	} 
 
@@ -33,8 +33,9 @@ func TestSubtrackTopStack (t *testing.T) {
 	status = interpreter.SubtractTopStack (&stack) 
 	if status {
 		var val = stack.Peek ()
-		fmt.Printf ("Stack size = %d Value = %d (Expected 1, Value -1)\n", stack.Size (), val)
+	
 		if val != -1 {
+			fmt.Printf ("Stack size = %d Value = %d (Expected 1, Value -1)\n", stack.Size (), val)
 			t.Error ("Expecting a value of -1.")
 		}
 	} else {
@@ -49,7 +50,6 @@ func TestSubtrackTopStack (t *testing.T) {
 	stack.Push (4) // three items
  
 	size := stack.Size ()
-	fmt.Printf ("Stack Size = %d items\n", size)
 	if size != 3 {
 		t.Errorf ("Expecting three items on the stack, only got %d\n", size)
 	}
