@@ -40,8 +40,9 @@ func MultiplyTopStack (s *intstack.IntStack) bool {
 
 func DivideTopStack (s *intstack.IntStack) bool {
 	if s.Size () >= 2 {
-		var val1 = s.Pop ()
-		var val2 = s.Pop ()
+		val1 := s.Pop ()
+		val2 := s.Pop ()
+
 		if val1 == 0 {
 			s.Push (0)
 		} else {
