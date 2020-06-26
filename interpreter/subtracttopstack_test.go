@@ -1,4 +1,4 @@
-package befunge93interpreter
+package interpreter
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package befunge93interpreter
+package interpreter
 
 import (
 	"fmt"
@@ -53,7 +53,7 @@ func DivideTopStack (s *intstack.IntStack) bool {
 	return false
 }
 
-func DuplicateTop (s *intstack.IntStack) bool {
+func DuplicateTopStack (s *intstack.IntStack) bool {
 	if s.Size() >= 1 {
 		s.Push (s.Peek ())
 		return true
@@ -61,7 +61,7 @@ func DuplicateTop (s *intstack.IntStack) bool {
 	return false
 }
 
-func ExchangeTop (s *intstack.IntStack) bool {
+func ExchangeTopStack (s *intstack.IntStack) bool {
 
 	if s.Size () >= 2 {
 		var val1 = s.Pop ()
@@ -80,6 +80,6 @@ func PopAndDisplayAsInt (s *intstack.IntStack) {
 
 func PopAndDisplayAsASCII (s *intstack.IntStack) {
 	var val = s.Pop ()
-	fmt.Printf ("%c ", val)
+	fmt.Printf ("%c", val)
 }
 

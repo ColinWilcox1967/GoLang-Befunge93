@@ -1,4 +1,4 @@
-package befunge93interpreter
+package interpreter
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func TestExchangeTop (t *testing.T) {
 	showNextTestHeader ()
 	stack.Reset ()
 
-	status = interpreter.ExchangeTop (&stack)
+	status = interpreter.ExchangeTopStack (&stack)
 	if status {
 		t.Error ("Stack was empty should have failed")
 	}
@@ -30,7 +30,7 @@ func TestExchangeTop (t *testing.T) {
 	showNextTestHeader ()
 	stack.Push (2)
 	stack.Push (3)
-	status = interpreter.ExchangeTop (&stack) 
+	status = interpreter.ExchangeTopStack (&stack) 
 	if status {
 		if stack.Size () == 2 {
 			val1 := stack.Pop ()
@@ -49,7 +49,7 @@ func TestExchangeTop (t *testing.T) {
 	stack.Push (2)
 	stack.Push (3)
 	
-	status = interpreter.ExchangeTop (&stack) 
+	status = interpreter.ExchangeTopStack (&stack) 
 	if status {
 		if stack.Size () == 3 { // nothing lost
 			val1 := stack.Pop ()

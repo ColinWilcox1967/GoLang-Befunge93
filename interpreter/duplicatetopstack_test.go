@@ -1,4 +1,4 @@
-package befunge93interpreter
+package interpreter
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ func TestDuplicateTop (t *testing.T) {
 	showNextTestHeader ()
 	stack.Reset ()
 
-	status = interpreter.DuplicateTop (&stack)
+	status = interpreter.DuplicateTopStack (&stack)
 	if status {
 		t.Error ("Stack was empty should have failed")
 	}
@@ -29,7 +29,7 @@ func TestDuplicateTop (t *testing.T) {
 	// test 2 - one value on stack duplicated
 	showNextTestHeader ()
 	stack.Push (2)
-	status = interpreter.DuplicateTop (&stack) 
+	status = interpreter.DuplicateTopStack(&stack) 
 	if status {
 		if stack.Size () == 2 {
 			val1 := stack.Pop ()
