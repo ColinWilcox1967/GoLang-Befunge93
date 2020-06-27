@@ -6,6 +6,7 @@ import (
 "flag"
 "strings"
 "strconv"
+"runtime"
 "github.com/eiannone/keyboard"
 
 instructionptr "github.com/colinwilcox1967/GoLang-Befunge93/instructionptr"
@@ -40,8 +41,8 @@ const (
 const (
 	MOVE_UP int  = 0
 	MOVE_DOWN int = 1
-	MOVE_BACKWARDS int = 2
-	MOVE_FORWARDS int = 3
+	MOVE_LEFT int = 2
+	MOVE_RIGHT int = 3
 )
 
 var (
@@ -51,6 +52,7 @@ var (
 	endProgram bool
 	currentDirection int
 	inStringMode bool
+	skipCell bool			// support '#'
 )
 
 func main () {
@@ -90,16 +92,17 @@ func main () {
 					stack.Push(int(lineData[yPos][xPos]))
 				}
 			} else {
+		
 				switch (lineData[yPos][xPos]) {
 					case '0','1','2','3','4','5','6','7','8','9': // push digits onto stack
 								var str string = fmt.Sprintf ("%c", lineData[yPos][xPos])
 								val,_ := strconv.Atoi(str)
 								stack.Push (val)
 					case '<': // move instruction pointer back, wrapping if necessary
-							   	currentDirection = MOVE_BACKWARDS
+							   	currentDirection = MOVE_LEFT
 				
 					case '>': // move instruction point right, wrapping if necessary
-								currentDirection = MOVE_FORWARDS
+								currentDirection = MOVE_RIGHT
 				
 					case 'v': // move instruction pointer down, wrapping if necessary
 								currentDirection = MOVE_DOWN
@@ -144,14 +147,14 @@ func main () {
 					case '_': // pop and move left or right
 								 var val = stack.Pop ()
 								 if val == 0 {
-								 	instructionPtr.MoveInstructionPointerCardinal(MOVE_FORWARDS, maxX, maxY)
-								 	currentDirection = MOVE_FORWARDS
+								 	instructionPtr.MoveInstructionPointerCardinal(MOVE_RIGHT, maxX, maxY)
+								 	currentDirection = MOVE_RIGHT
 								 } else {
-								 	instructionPtr.MoveInstructionPointerCardinal(MOVE_BACKWARDS, maxX, maxY)
-								 	currentDirection = MOVE_BACKWARDS
+								 	instructionPtr.MoveInstructionPointerCardinal(MOVE_LEFT, maxX, maxY)
+								 	currentDirection = MOVE_LEFT
 								 }
 					case '|': // pop and move up or down
-								var val = stack.Pop ()
+								 var val = stack.Pop ()
 								 if val == 0 {
 								 	instructionPtr.MoveInstructionPointerCardinal(MOVE_DOWN, maxX, maxY)
 								 	currentDirection = MOVE_DOWN
@@ -176,7 +179,8 @@ func main () {
 				
 					case ',': // pop and display as character
 								interpreter.PopAndDisplayAsASCII (&stack)
-					case '#':
+					case '#': // skip next cell
+								skipCell = true
 					case 'p': // put value
 								var y = stack.Pop ()
 								var x = stack.Pop ()
@@ -202,52 +206,72 @@ func main () {
 				}
 			}
 
-			// move to next cell in current direction
-			switch currentDirection {
-				case MOVE_FORWARDS:
-									if xPos < len(lineData[yPos]) {
-										instructionPtr.MoveInstructionPtrRelative (1,0) // one place to the right
-									} else {
-										instructionPtr.MoveInstructionPtr (0, yPos) // wrap round horizontally
-									}
-				case MOVE_BACKWARDS:
-									if xPos > 0 {
-										instructionPtr.MoveInstructionPtrRelative (-1, 0) // one place to the left
-									} else {
-										instructionPtr.MoveInstructionPtr (len(lineData[yPos])-1, yPos) // wrap round from the right
-									}
-				case MOVE_UP:
-								   if yPos > 0 {
-										instructionPtr.MoveInstructionPtrRelative (0, -1) // one place to the up
-								   } else {
-										instructionPtr.MoveInstructionPtr (xPos, 0) // wrap round from the top
-								   }
-				case MOVE_DOWN:
-								   if yPos < len(lineData) {
-								   		instructionPtr.MoveInstructionPtrRelative (0, 1) // one place down
-								   } else {
-								   		instructionPtr.MoveInstructionPtr (xPos,0) // wrap round from below
-								   }
-				default:
-					fmt.Printf ("Unknown direction specified for instruction pointer (%d)\n", currentDirection)
-
+			// if we skip the cell then move ahead in current direction before doing anything else
+			if skipCell {
+				MoveToNextCellInCurrentDirection (currentDirection, xPos, yPos, len(lineData[yPos]), len(lineData))
+				skipCell = false
 			}
 
+			MoveToNextCellInCurrentDirection (currentDirection,xPos, yPos,len(lineData[yPos]), len(lineData))
+					
 		}	
 	}	
+}
+
+func MoveToNextCellInCurrentDirection (currentDirection, xPos, yPos, xMax, yMax int) {
+	// move to next cell in current direction
+	switch currentDirection {
+		case MOVE_RIGHT:
+							if xPos < xMax {
+								instructionPtr.MoveInstructionPtrRelative (1,0) // one place to the right
+							} else {
+								instructionPtr.MoveInstructionPtr (0, yPos) // wrap round horizontally
+							}
+		case MOVE_LEFT:
+							if xPos > 0 {
+								instructionPtr.MoveInstructionPtrRelative (-1, 0) // one place to the left
+							} else {
+								instructionPtr.MoveInstructionPtr (xMax-1, yPos) // wrap round from the right
+							}
+		case MOVE_UP:
+						   if yPos > 0 {
+								instructionPtr.MoveInstructionPtrRelative (0, -1) // one place to the up
+						   } else {
+								instructionPtr.MoveInstructionPtr (xPos, 0) // wrap round from the top
+						   }
+		case MOVE_DOWN:
+						   if yPos < yMax {
+						   		instructionPtr.MoveInstructionPtrRelative (0, 1) // one place down
+						   } else {
+						   		instructionPtr.MoveInstructionPtr (xPos,0) // wrap round from below
+						   }
+		default:
+			fmt.Printf ("Unknown direction specified for instruction pointer (%d)\n", currentDirection)
+
+	}
 }
 
 // private methods
 func displayBanner () {
 	fmt.Printf ("Befunge93 Interpreter %s\n\n", BEFUNGE93_VERSION)
+
+	_, filename, _, _ := runtime.Caller(1)
+	fileStat, err := os.Stat (filename)
+	if err != nil {
+		modifiedString := fmt.Sprintf ("%s",fileStat.ModTime ())
+		pos := strings.Index (modifiedString, " ")
+		modifiedString = modifiedString [:pos]
+		fmt.Println(modifiedString)
+	}
 }
 
 func initialise () {
 	stack.Reset ()
 	instructionPtr.ResetInstructionPtr()
 	endProgram = false
-	currentDirection = MOVE_FORWARDS
+	currentDirection = MOVE_RIGHT
 	inStringMode = false
+	skipCell = false
 }
 
 func checkProgramDimensions (data []string) int {
