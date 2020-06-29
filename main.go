@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/eiannone/keyboard"
+	"math/rand"
 	"os"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	instructionptr "github.com/colinwilcox1967/GoLang-Befunge93/instructionptr"
 	interpreter "github.com/colinwilcox1967/GoLang-Befunge93/interpreter"
@@ -79,8 +81,6 @@ func main() {
 		for !endProgram {
 			var xPos int = instructionPtr.GetXPos()
 			var yPos int = instructionPtr.GetYPos()
-			var maxX int = len(lineData[yPos])
-			var maxY int = len(lineData) - 1 // row zero indexed
 
 			// check whether we are running string mode
 			if inStringMode {
@@ -93,6 +93,7 @@ func main() {
 				}
 			} else {
 
+				fmt.Println("%d %d\n", yPos, xPos)
 				switch lineData[yPos][xPos] {
 				case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': // push digits onto stack
 					var str string = fmt.Sprintf("%c", lineData[yPos][xPos])
@@ -137,23 +138,26 @@ func main() {
 						stack.Push(0)
 					}
 				case '?': // move in a random cardinal direction
-
+					// get a seed
+					seed := rand.NewSource(time.Now().UnixNano())
+					r := rand.New(seed)
+					currentDirection = r.Intn(4) // choose a random cardinal direction 0 .. 3 -> MOVE_UP to MOVE_RIGHT
 				case '_': // pop and move left or right
 					var val = stack.Pop()
 					if val == 0 {
-						instructionPtr.MoveInstructionPointerCardinal(MOVE_RIGHT, maxX, maxY)
+						MoveToNextCellInCurrentDirection(MOVE_RIGHT, xPos, yPos, len(lineData[yPos]), len(lineData))
 						currentDirection = MOVE_RIGHT
 					} else {
-						instructionPtr.MoveInstructionPointerCardinal(MOVE_LEFT, maxX, maxY)
+						MoveToNextCellInCurrentDirection(MOVE_LEFT, xPos, yPos, len(lineData[yPos]), len(lineData))
 						currentDirection = MOVE_LEFT
 					}
 				case '|': // pop and move up or down
 					var val = stack.Pop()
 					if val == 0 {
-						instructionPtr.MoveInstructionPointerCardinal(MOVE_DOWN, maxX, maxY)
+						MoveToNextCellInCurrentDirection(MOVE_DOWN, xPos, yPos, len(lineData[yPos]), len(lineData))
 						currentDirection = MOVE_DOWN
 					} else {
-						instructionPtr.MoveInstructionPointerCardinal(MOVE_UP, maxX, maxY)
+						MoveToNextCellInCurrentDirection(MOVE_UP, xPos, yPos, len(lineData[yPos]), len(lineData))
 						currentDirection = MOVE_UP
 					}
 				case '"': // enter string mode
@@ -188,8 +192,8 @@ func main() {
 					lineData[y] = replaceCharAtStringIndex(lineData[y], lineData[yPos][xPos], x)
 
 				case '&': // input number
-					//				char, _, err := keyboard.GetSingleKey () //? need multi digit?
-					//				stack.Push (int(char))
+					char, _, _ := keyboard.GetSingleKey() //? need multi digit?
+					stack.Push(int(char))
 				case '~': // ask for character and push
 					char, _, _ := keyboard.GetSingleKey()
 					stack.Push(int(char))
