@@ -36,37 +36,6 @@ func (iptr *InstructionPtr) GetYPos() int {
 	return iptr.yPos
 }
 
-func (iptr *InstructionPtr) MoveInstructionPointerCardinal(direction, maxX, maxY int) {
-	var xPos = iptr.GetXPos()
-	var yPos = iptr.GetYPos()
-
-	switch direction {
-	case MOVE_UP:
-		yPos--
-		if yPos < 0 {
-			yPos = maxY
-		}
-	case MOVE_DOWN:
-		yPos++
-		if yPos > maxY {
-			yPos = 0
-		}
-	case MOVE_BACKWARDS:
-		xPos--
-		if xPos < 0 {
-			xPos = maxX
-		}
-	case MOVE_FORWARDS:
-		xPos++
-		if xPos == maxX {
-			xPos = 0
-		}
-	default:
-		// Ignore and do nothing
-	}
-	iptr.MoveInstructionPtr(yPos, xPos)
-}
-
 // helper
 func (iptr *InstructionPtr) ShowInstructionPtr() {
 	fmt.Printf("Iptr: (%d,%d)\n", iptr.xPos, iptr.yPos)
