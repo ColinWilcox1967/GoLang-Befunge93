@@ -82,6 +82,14 @@ func main() {
 			var xPos int = instructionPtr.GetXPos()
 			var yPos int = instructionPtr.GetYPos()
 
+			// make sure we havent been sent offgrid by incorrect code
+			if offGrid (lineData, xPos, yPos) {
+				fmt.Printf ("Program terminated - sent off grid at cell (Row = %d, Column = %d)\n", yPos, xPos)
+				stack.DisplayStack ()
+				endProgram = true
+				continue
+			}
+
 			// check whether we are running string mode
 			if inStringMode {
 				// just push each character onto the stack for later
@@ -92,8 +100,6 @@ func main() {
 					stack.Push(int(lineData[yPos][xPos]))
 				}
 			} else {
-
-				fmt.Println("%d %d\n", yPos, xPos)
 				switch lineData[yPos][xPos] {
 				case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': // push digits onto stack
 					var str string = fmt.Sprintf("%c", lineData[yPos][xPos])
@@ -321,3 +327,23 @@ func showStatus(status int, extraInfoString string, extraInfoValue int) {
 		os.Exit(status)
 	}
 }
+
+func offGrid (lineData []string, x,y int) bool {
+	// row bad
+	if y < 0 || y == len(lineData) {
+		return true
+	}
+
+	// column is bad ?
+	if x <0 || x == len(lineData[y]) {
+		return true
+	}
+
+	
+
+	return false
+}
+
+
+
+
