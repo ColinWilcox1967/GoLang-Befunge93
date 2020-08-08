@@ -320,7 +320,7 @@ func showStatus(status int, extraInfoString string, extraInfoValue int) {
 			message += fmt.Sprintf("Invalid character found whilst executing code : '%s'\n", extraInfoString)
 		default:
 			// shouldnt get here but catch it anyway
-			fmt.Println("Unknown Error Detected (%d)\n", status)
+			fmt.Printf("Unknown Error Detected (%d)\n", status)
 		}
 
 		fmt.Println(message)
